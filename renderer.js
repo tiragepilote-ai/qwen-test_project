@@ -858,7 +858,13 @@ async function updateAssignButtonCountInTable(profId) {
   }
 }
 
+// Variable pour stocker le jour actuel lors de l'ouverture de la modale d'assignation
+let currentAssignDayId = null;
+
 async function openAssignModal(profId, profName, dayId) {
+  // Stocker le jour actuel pour les mises à jour ultérieures
+  currentAssignDayId = dayId;
+  
   const seances = await window.electronAPI.getSeancesForProfDay(profId, dayId);
   const jour = (await window.electronAPI.getJours()).find(j => j.id === dayId);
   
@@ -914,7 +920,7 @@ async function toggleSeanceAssignment(profId, seanceId) {
       button.textContent = 'إلغاء التعيين';
       button.style.backgroundColor = '#2ecc71';
       button.style.borderColor = '#27ae60';
-      updateAssignButtonCount(profId, dayId);
+      updateAssignButtonCount(profId, currentAssignDayId);
     } else {
       // Afficher l'erreur avec Toast
       showToast('error', 'خطأ في التعيين', result.error || 'حدث خطأ أثناء التعيين');
@@ -927,7 +933,7 @@ async function toggleSeanceAssignment(profId, seanceId) {
     button.textContent = 'تعيين';
     button.style.backgroundColor = '';
     button.style.borderColor = '';
-    updateAssignButtonCount(profId, dayId);
+    updateAssignButtonCount(profId, currentAssignDayId);
   }
   
   // Mettre à jour le bouton dans le tableau principal
