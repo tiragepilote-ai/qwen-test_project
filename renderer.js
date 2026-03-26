@@ -106,6 +106,40 @@ function initStatusBar() {
   setInterval(updateStatusBar, 60000); // Update every minute
 }
 
+// Toast Notification System
+function showToast(type, title, message, duration = 5000) {
+  const container = document.getElementById('toast-container');
+  if (!container) return;
+
+  const icons = {
+    success: '✓',
+    error: '✕',
+    warning: '⚠',
+    info: 'ℹ'
+  };
+
+  const toast = document.createElement('div');
+  toast.className = `toast ${type}`;
+  toast.innerHTML = `
+    <span class="toast-icon">${icons[type] || icons.info}</span>
+    <div class="toast-content">
+      <div class="toast-title">${title}</div>
+      <div class="toast-message">${message}</div>
+    </div>
+    <button class="toast-close" onclick="this.parentElement.remove()">×</button>
+  `;
+
+  container.appendChild(toast);
+
+  // Auto remove after duration
+  setTimeout(() => {
+    if (toast.parentElement) {
+      toast.classList.add('hiding');
+      setTimeout(() => toast.remove(), 300);
+    }
+  }, duration);
+}
+
 function updateStatusBar() {
   const timeElement = document.getElementById('status-time');
   const countElement = document.getElementById('status-count');
@@ -210,7 +244,7 @@ async function handleModalConfirm() {
     loadDataForTab(currentTab);
   } catch (error) {
     console.error('Error saving:', error);
-    alert('حدث خطأ أثناء الحفظ.');
+    showToast('error', 'خطأ', 'حدث خطأ أثناء الحفظ.');
   }
 }
 
@@ -517,7 +551,7 @@ async function deleteClass(id) {
 async function handleClassSubmit() {
   const name = document.getElementById('class-name').value.trim();
   if (!name) {
-    alert('الرجاء إدخال اسم الفصل.');
+    showToast('warning', 'تنبيه', 'الرجاء إدخال اسم الفصل.');
     return;
   }
   
@@ -547,7 +581,7 @@ async function deleteJour(id) {
 async function handleJourSubmit() {
   const day = document.getElementById('jour-day').value;
   if (!day) {
-    alert('الرجاء تحديد تاريخ.');
+    showToast('warning', 'تنبيه', 'الرجاء تحديد تاريخ.');
     return;
   }
   
@@ -577,7 +611,7 @@ async function deleteSalle(id) {
 async function handleSalleSubmit() {
   const name = document.getElementById('salle-name').value.trim();
   if (!name) {
-    alert('الرجاء إدخال اسم القاعة.');
+    showToast('warning', 'تنبيه', 'الرجاء إدخال اسم القاعة.');
     return;
   }
   
@@ -607,7 +641,7 @@ async function deleteMatiere(id) {
 async function handleMatiereSubmit() {
   const name = document.getElementById('matiere-name').value.trim();
   if (!name) {
-    alert('الرجاء إدخال اسم المادة.');
+    showToast('warning', 'تنبيه', 'الرجاء إدخال اسم المادة.');
     return;
   }
   
@@ -641,12 +675,12 @@ async function handleProfSubmit() {
   const matiere_id = parseInt(document.getElementById('prof-matiere').value);
   
   if (!name) {
-    alert('الرجاء إدخال اسم الأستاذ.');
+    showToast('warning', 'تنبيه', 'الرجاء إدخال اسم الأستاذ.');
     return;
   }
   
   if (!matiere_id) {
-    alert('الرجاء اختيار المادة.');
+    showToast('warning', 'تنبيه', 'الرجاء اختيار المادة.');
     return;
   }
   
@@ -695,7 +729,7 @@ async function handleFicheExamSubmit() {
   const heure_fin = document.getElementById('fiche-heure-fin').value;
   
   if (!matiere_id || !classe_id || !salle_id || !day_id || !heure_debut || !heure_fin) {
-    alert('الرجاء ملء جميع الحقول.');
+    showToast('warning', 'تنبيه', 'الرجاء ملء جميع الحقول.');
     return;
   }
   
@@ -870,9 +904,10 @@ async function toggleSeanceAssignment(profId, seanceId) {
       button.textContent = 'إلغاء التعيين';
       button.style.backgroundColor = '#2ecc71';
       button.style.borderColor = '#27ae60';
+      updateAssignButtonCount(profId, dayId);
     } else {
-      // Afficher l'erreur
-      alert(result.error || 'حدث خطأ أثناء التعيين');
+      // Afficher l'erreur avec Toast
+      showToast('error', 'خطأ في التعيين', result.error || 'حدث خطأ أثناء التعيين');
       return; // Ne pas mettre à jour l'UI si échec
     }
   } else {
@@ -882,6 +917,7 @@ async function toggleSeanceAssignment(profId, seanceId) {
     button.textContent = 'تعيين';
     button.style.backgroundColor = '';
     button.style.borderColor = '';
+    updateAssignButtonCount(profId, dayId);
   }
   
   // Mettre à jour le bouton dans le tableau principal
