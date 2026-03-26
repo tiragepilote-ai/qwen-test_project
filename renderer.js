@@ -779,7 +779,7 @@ async function renderAssignSeancesTable() {
     // أعمدة الأيام: زر لكل تقاطع
     jours.forEach(jour => {
       bodyHTML += `<td style="text-align: center;">`;
-      bodyHTML += `<button class="btn-action btn-assign" onclick="openAssignModal(${prof.id}, '${escapeHtml(prof.name)}', ${jour.id})">تعيين/عرض</button>`;
+      bodyHTML += `<button class="btn-action btn-assign" id="btn-assign-${prof.id}-${jour.id}" onclick="openAssignModal(${prof.id}, '${escapeHtml(prof.name)}', ${jour.id})">تعيين/عرض</button>`;
       bodyHTML += `</td>`;
     });
     
@@ -787,6 +787,31 @@ async function renderAssignSeancesTable() {
   });
   
   tbody.innerHTML = bodyHTML;
+}
+
+// Fonction pour mettre à jour le compteur d'assignations dans le tableau principal
+async function updateAssignButtonCountInTable(profId) {
+  const profs = await window.electronAPI.getProfs();
+  const jours = await window.electronAPI.getJours();
+  
+  for (const prof of profs) {
+    if (prof.id === profId) {
+      for (const jour of jours) {
+        const seances = await window.electronAPI.getSeancesForProfDay(prof.id, jour.id);
+        const assignedCount = seances.filter(s => s.assigned).length;
+        const btn = document.getElementById(`btn-assign-${prof.id}-${jour.id}`);
+        if (btn) {
+          if (assignedCount > 0) {
+            btn.textContent = `تعيين (${assignedCount})`;
+            btn.classList.add('has-assignments');
+          } else {
+            btn.textContent = 'تعيين/عرض';
+            btn.classList.remove('has-assignments');
+          }
+        }
+      }
+    }
+  }
 }
 
 async function openAssignModal(profId, profName, dayId) {
@@ -833,27 +858,24 @@ async function openAssignModal(profId, profName, dayId) {
 }
 
 async function toggleSeanceAssignment(profId, seanceId, assign) {
+  const button = event.currentTarget;
+  
   if (assign) {
     await window.electronAPI.assignSeanceToProf(profId, seanceId);
+    // Mise à jour immédiate de l'UI
+    button.classList.add('assigned');
+    button.querySelector('.seance-status').textContent = '✓ معين';
+    button.querySelector('.seance-status').classList.add('assigned');
   } else {
     await window.electronAPI.unassignSeanceFromProf(profId, seanceId);
+    // Mise à jour immédiate de l'UI
+    button.classList.remove('assigned');
+    button.querySelector('.seance-status').textContent = 'غير معين';
+    button.querySelector('.seance-status').classList.remove('assigned');
   }
   
-  // إعادة تحميل المحتوى لتحديث الحالة
-  const currentTabContent = document.querySelector('.tab-content.active');
-  if (currentTabContent.id === 'tab-assign-seances') {
-    // إذا كنا في صفحة التعيين، نعيد تحميل الجدول
-    await renderAssignSeancesTable();
-  }
-  
-  // تحديث قائمة الحصص في النافذة المفتوحة
-  const modalTitle = document.getElementById('modal-title').textContent;
-  // استخراج معلومات البروف واليوم من العنوان (طريقة بسيطة)
-  // سنقوم فقط بإعادة فتح النافذة بنفس المعاملات
-  // لكن الأفضل هو تمرير المعاملات مباشرة
-  
-  // للحصول على المعاملات الحالية، نحتاج إلى تخزينها
-  // سنفترض أننا سنمررها عبر دالة مساعدة
+  // Mettre à jour le bouton dans le tableau principal aussi
+  updateAssignButtonCountInTable(profId);
 }
 
 // تعديل closeModal لإعادة عرض الأزرار

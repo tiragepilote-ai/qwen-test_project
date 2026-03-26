@@ -673,6 +673,10 @@ body {
   box-shadow: 0 4px 12px rgba(79, 172, 254, 0.4);
 }
 
+.btn-assign.has-assignments {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+}
+
 .seance-list {
   max-height: 400px;
   overflow-y: auto;
@@ -700,6 +704,7 @@ body {
 .seance-item.assigned {
   border-color: var(--success);
   background: rgba(0, 210, 106, 0.1);
+  transform: translateX(-4px);
 }
 
 .seance-info {
@@ -726,6 +731,7 @@ body {
   font-weight: 600;
   background: var(--bg-secondary);
   color: var(--text-muted);
+  transition: all var(--transition-fast);
 }
 
 .seance-status.assigned {
