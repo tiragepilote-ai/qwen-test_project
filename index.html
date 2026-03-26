@@ -57,10 +57,13 @@
     <main class="main-content">
       <header class="content-header">
         <h2 id="page-title">بطاقات الامتحان</h2>
-        <button class="btn-primary" id="add-btn">
-          <span class="btn-icon">+</span>
-          جديد
-        </button>
+        <div style="display: flex; gap: 10px; align-items: center;">
+          <button class="btn-secondary" id="theme-toggle" style="padding: 10px 16px; font-size: 18px;">🌙</button>
+          <button class="btn-primary" id="add-btn">
+            <span class="btn-icon">+</span>
+            جديد
+          </button>
+        </div>
       </header>
 
       <div class="content-body">
@@ -199,6 +202,32 @@
       </div>
     </div>
   </div>
+
+  <!-- Status Bar -->
+  <footer class="status-bar">
+    <div class="status-bar-left">
+      <div class="status-item">
+        <span class="status-icon">✓</span>
+        <span id="status-ready">جاهز</span>
+      </div>
+      <div class="status-divider"></div>
+      <div class="status-item">
+        <span class="status-icon">📊</span>
+        <span id="status-count">0 عناصر</span>
+      </div>
+    </div>
+    <div class="status-bar-right">
+      <div class="status-item">
+        <span class="status-icon">👤</span>
+        <span id="status-user">مدير النظام</span>
+      </div>
+      <div class="status-divider"></div>
+      <div class="status-item">
+        <span class="status-icon">🕐</span>
+        <span id="status-time">--:--</span>
+      </div>
+    </div>
+  </footer>
 
   <script src="renderer.js"></script>
 </body>

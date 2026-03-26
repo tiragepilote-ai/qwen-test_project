@@ -16,10 +16,41 @@ const pageTitles = {
 
 // Initialize app
 document.addEventListener('DOMContentLoaded', () => {
+  initTheme();
   initNavigation();
   initModal();
+  initStatusBar();
   loadCurrentTab();
 });
+
+// Theme Toggle
+function initTheme() {
+  const themeToggle = document.getElementById('theme-toggle');
+  const body = document.body;
+  
+  // Load saved theme
+  const savedTheme = localStorage.getItem('theme') || 'dark';
+  if (savedTheme === 'light') {
+    body.setAttribute('data-theme', 'light');
+    themeToggle.textContent = '☀️';
+  } else {
+    body.removeAttribute('data-theme');
+    themeToggle.textContent = '🌙';
+  }
+  
+  themeToggle.addEventListener('click', () => {
+    const currentTheme = body.getAttribute('data-theme');
+    if (currentTheme === 'light') {
+      body.removeAttribute('data-theme');
+      themeToggle.textContent = '🌙';
+      localStorage.setItem('theme', 'dark');
+    } else {
+      body.setAttribute('data-theme', 'light');
+      themeToggle.textContent = '☀️';
+      localStorage.setItem('theme', 'light');
+    }
+  });
+}
 
 // Navigation
 function initNavigation() {
@@ -46,6 +77,9 @@ function loadCurrentTab() {
   
   // Load data for current tab
   loadDataForTab(currentTab);
+  
+  // Update status bar count
+  updateItemCount();
 }
 
 // Modal initialization
@@ -64,6 +98,66 @@ function initModal() {
   // modalOverlay.addEventListener('click', (e) => {
   //   if (e.target === modalOverlay) closeModal();
   // });
+}
+
+// Status Bar Functions
+function initStatusBar() {
+  updateStatusBar();
+  setInterval(updateStatusBar, 60000); // Update every minute
+}
+
+function updateStatusBar() {
+  const timeElement = document.getElementById('status-time');
+  const countElement = document.getElementById('status-count');
+  
+  if (timeElement) {
+    const now = new Date();
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    timeElement.textContent = `${hours}:${minutes}`;
+  }
+  
+  if (countElement && currentTab) {
+    updateItemCount();
+  }
+}
+
+async function updateItemCount() {
+  const countElement = document.getElementById('status-count');
+  if (!countElement) return;
+  
+  let count = 0;
+  try {
+    switch (currentTab) {
+      case 'classes':
+        const classes = await window.electronAPI.getClasses();
+        count = classes.length;
+        break;
+      case 'jours':
+        const jours = await window.electronAPI.getJours();
+        count = jours.length;
+        break;
+      case 'salles':
+        const salles = await window.electronAPI.getSalles();
+        count = salles.length;
+        break;
+      case 'matieres':
+        const matieres = await window.electronAPI.getMatieres();
+        count = matieres.length;
+        break;
+      case 'profs':
+        const profs = await window.electronAPI.getProfs();
+        count = profs.length;
+        break;
+      case 'fiches-exam':
+        const fiches = await window.electronAPI.getFichesExam();
+        count = fiches.length;
+        break;
+    }
+    countElement.textContent = `${count} عنصر`;
+  } catch (error) {
+    console.error('Error updating item count:', error);
+  }
 }
 
 function openModal(title, formHtml, action = 'add', editId = null) {
@@ -153,6 +247,9 @@ async function loadDataForTab(tab) {
       await renderAssignSeancesTable();
       break;
   }
+  
+  // Update status bar after loading data
+  updateItemCount();
 }
 
 // Render functions
@@ -661,7 +758,7 @@ async function renderAssignSeancesTable() {
   const tbody = document.getElementById('assign-body');
   
   // بناء رأس الجدول: العمود الأول "الأستاذ" ثم الأعمدة لكل يوم
-  let headerHTML = '<th style="min-width: 200px; position: sticky; right: 0; background: #1a1a2e; z-index: 10;">الأستاذ</th>';
+  let headerHTML = '<th style="min-width: 200px; position: sticky; right: 0; background: var(--bg-secondary); z-index: 10;">الأستاذ</th>';
   jours.forEach(jour => {
     headerHTML += `<th style="min-width: 150px;">${formatDate(jour.day)}</th>`;
   });
@@ -677,7 +774,7 @@ async function renderAssignSeancesTable() {
   profs.forEach(prof => {
     bodyHTML += `<tr>`;
     // عمود اسم الأستاذ (مثبت على اليمين)
-    bodyHTML += `<td style="position: sticky; right: 0; background: #1a1a2e; z-index: 5; font-weight: bold;">${escapeHtml(prof.name)}</td>`;
+    bodyHTML += `<td style="position: sticky; right: 0; background: var(--bg-secondary); z-index: 5; font-weight: bold;">${escapeHtml(prof.name)}</td>`;
     
     // أعمدة الأيام: زر لكل تقاطع
     jours.forEach(jour => {

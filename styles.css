@@ -40,6 +40,34 @@
   --transition-slow: 0.5s ease;
 }
 
+[data-theme="light"] {
+  --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  --accent-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  
+  --bg-primary: #f4f6f9;
+  --bg-secondary: #ffffff;
+  --bg-tertiary: #ecf0f1;
+  --bg-card: #ffffff;
+  
+  --text-primary: #2c3e50;
+  --text-secondary: #5d6d7e;
+  --text-muted: #95a5a6;
+  
+  --border-color: rgba(0, 0, 0, 0.1);
+  --border-light: rgba(0, 0, 0, 0.05);
+  
+  --success: #27ae60;
+  --warning: #f39c12;
+  --danger: #e74c3c;
+  --info: #3498db;
+  
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.08);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.15);
+  --shadow-glow: 0 0 20px rgba(102, 126, 234, 0.2);
+}
+
 * {
   margin: 0;
   padding: 0;
@@ -721,4 +749,102 @@ body {
 
 .assign-table tbody tr:hover {
   background: rgba(255, 255, 255, 0.03);
+}
+
+/* ========================================
+   Status Bar - Professional Look
+   ======================================== */
+.status-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 28px;
+  background: var(--bg-secondary);
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  z-index: 1000;
+  backdrop-filter: blur(10px);
+}
+
+.status-bar-left,
+.status-bar-right {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.status-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: color var(--transition-fast);
+}
+
+.status-item:hover {
+  color: var(--text-primary);
+}
+
+.status-icon {
+  font-size: 14px;
+}
+
+.status-divider {
+  width: 1px;
+  height: 16px;
+  background: var(--border-color);
+}
+
+/* ========================================
+   Status Bar - Professional Look
+   ======================================== */
+.status-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 28px;
+  background: var(--bg-secondary);
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  z-index: 1000;
+  backdrop-filter: blur(10px);
+}
+
+.status-bar-left,
+.status-bar-right {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.status-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: color var(--transition-fast);
+}
+
+.status-item:hover {
+  color: var(--text-primary);
+}
+
+.status-icon {
+  font-size: 14px;
+}
+
+.status-divider {
+  width: 1px;
+  height: 16px;
+  background: var(--border-color);
 }

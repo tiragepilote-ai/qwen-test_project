@@ -1,4 +1,4 @@
-```gitignore
+```
 # Dependencies
 node_modules/
 
@@ -15,38 +15,30 @@ node_modules/
 .vscode/
 .idea/
 
-# Build artifacts
-dist/
-build/
-coverage/
-htmlcov/
-*.out
-
 # Python
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
-.Python
-*.so
-.coverage
 
-# Compiled files
-*.class
-*.o
-*.obj
-*.dll
-*.so
-*.a
-*.exe
+# Build outputs
+dist/
+build/
+*.min.js
+*.min.css
 
-# System files
+# OS generated files
 .DS_Store
 Thumbs.db
-```
 
-Wait, let me reconsider. The modified files are only HTML, JS, and CSS files, which are source code files. There are no build artifacts, dependency directories, or temporary files in the change list that would require adding ignore rules.
-
-```gitignore
-
+# Compression files
+*.zip
+*.gz
+*.tar
+*.tgz
+*.bz2
+*.xz
+*.7z
+*.rar
+*.zst
 ```
