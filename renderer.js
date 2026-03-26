@@ -863,14 +863,25 @@ async function toggleSeanceAssignment(profId, seanceId) {
   
   if (!isAssigned) {
     // Assigner
-    await window.electronAPI.assignSeanceToProf(profId, seanceId);
-    button.classList.add('assigned');
-    button.textContent = 'إلغاء التعيين';
+    const result = await window.electronAPI.assignSeanceToProf(profId, seanceId);
+    
+    if (result.success) {
+      button.classList.add('assigned');
+      button.textContent = 'إلغاء التعيين';
+      button.style.backgroundColor = '#2ecc71';
+      button.style.borderColor = '#27ae60';
+    } else {
+      // Afficher l'erreur
+      alert(result.error || 'حدث خطأ أثناء التعيين');
+      return; // Ne pas mettre à jour l'UI si échec
+    }
   } else {
     // Désassigner
     await window.electronAPI.unassignSeanceFromProf(profId, seanceId);
     button.classList.remove('assigned');
     button.textContent = 'تعيين';
+    button.style.backgroundColor = '';
+    button.style.borderColor = '';
   }
   
   // Mettre à jour le bouton dans le tableau principal

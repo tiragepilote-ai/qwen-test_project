@@ -266,10 +266,92 @@ ipcMain.handle('get-prof-seances', () => {
   `).all();
 });
 
+// Helper function to convert time string "HH:MM" to minutes
+const timeToMinutes = (timeStr) => {
+  const [h, m] = timeStr.split(':').map(Number);
+  return h * 60 + m;
+};
+
+// Check for professor conflicts
+const checkProfConflict = (profId, dayId, startTime, endTime) => {
+  const existingAssignments = db.prepare(`
+    SELECT f.heure_debut, f.heure_fin
+    FROM prof_seance ps
+    JOIN fiches_exam f ON ps.seance_id = f.id
+    WHERE ps.prof_id = ? AND f.day_id = ?
+  `).all(profId, dayId);
+
+  const newStart = timeToMinutes(startTime);
+  const newEnd = timeToMinutes(endTime);
+
+  for (const existing of existingAssignments) {
+    const existStart = timeToMinutes(existing.heure_debut);
+    const existEnd = timeToMinutes(existing.heure_fin);
+
+    // Overlap check: (StartA < EndB) AND (EndA > StartB)
+    if (newStart < existEnd && newEnd > existStart) {
+      return false; // Conflict found
+    }
+  }
+  return true; // No conflict
+};
+
+// Check for room (salle) conflicts
+const checkSalleConflict = (salleId, dayId, startTime, endTime) => {
+  const existingExams = db.prepare(`
+    SELECT heure_debut, heure_fin
+    FROM fiches_exam
+    WHERE salle_id = ? AND day_id = ?
+  `).all(salleId, dayId);
+
+  const newStart = timeToMinutes(startTime);
+  const newEnd = timeToMinutes(endTime);
+
+  for (const existing of existingExams) {
+    const existStart = timeToMinutes(existing.heure_debut);
+    const existEnd = timeToMinutes(existing.heure_fin);
+
+    // Overlap check
+    if (newStart < existEnd && newEnd > existStart) {
+      return false; // Conflict found
+    }
+  }
+  return true; // No conflict
+};
+
 ipcMain.handle('assign-seance-to-prof', (event, prof_id, seance_id) => {
-  const stmt = db.prepare('INSERT OR IGNORE INTO prof_seance (prof_id, seance_id) VALUES (?, ?)');
-  stmt.run(prof_id, seance_id);
-  return true;
+  try {
+    // 1. Get seance details
+    const seance = db.prepare('SELECT * FROM fiches_exam WHERE id = ?').get(seance_id);
+    if (!seance) {
+      return { success: false, error: 'Séance introuvable' };
+    }
+
+    // 2. Check professor conflict
+    if (!checkProfConflict(prof_id, seance.day_id, seance.heure_debut, seance.heure_fin)) {
+      return { 
+        success: false, 
+        error: 'تعارض في الجدول الزمني: الأستاذ مشغول في هذا الوقت بالفعل.' 
+      };
+    }
+
+    // 3. Check room conflict (optional: only if you want to prevent room double-booking via this action)
+    // Note: Usually room conflicts are checked when creating the exam card, but we can double-check here
+    if (!checkSalleConflict(seance.salle_id, seance.day_id, seance.heure_debut, seance.heure_fin)) {
+       return { 
+        success: false, 
+        error: 'تعارض في القاعة: هناك امتحان آخر مبرمج في نفس القاعة و نفس الوقت.' 
+      };
+    }
+
+    // 4. If no conflicts, assign
+    const stmt = db.prepare('INSERT OR IGNORE INTO prof_seance (prof_id, seance_id) VALUES (?, ?)');
+    stmt.run(prof_id, seance_id);
+    return { success: true };
+  } catch (error) {
+    console.error('Erreur assignation:', error);
+    return { success: false, error: error.message };
+  }
 });
 
 ipcMain.handle('unassign-seance-from-prof', (event, prof_id, seance_id) => {
