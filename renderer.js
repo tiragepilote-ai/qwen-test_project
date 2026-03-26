@@ -9,7 +9,8 @@ const pageTitles = {
   'classes': 'الفصول',
   'jours': 'الأيام',
   'salles': 'القاعات',
-  'matieres': 'المواد'
+  'matieres': 'المواد',
+  'profs': 'الأساتذة'
 };
 
 // Initialize app
@@ -103,6 +104,9 @@ async function handleModalConfirm() {
       case 'matieres':
         await handleMatiereSubmit();
         break;
+      case 'profs':
+        await handleProfSubmit();
+        break;
       case 'fiches-exam':
         await handleFicheExamSubmit();
         break;
@@ -135,6 +139,10 @@ async function loadDataForTab(tab) {
     case 'matieres':
       data = await window.electronAPI.getMatieres();
       renderMatieresTable(data);
+      break;
+    case 'profs':
+      data = await window.electronAPI.getProfs();
+      renderProfsTable(data);
       break;
     case 'fiches-exam':
       data = await window.electronAPI.getFichesExam();
@@ -228,6 +236,28 @@ function renderMatieresTable(matieres) {
   `).join('');
 }
 
+function renderProfsTable(profs) {
+  const tbody = document.getElementById('profs-body');
+  if (profs.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="4" class="empty-state"><div class="empty-state-icon">📭</div><h3></h3><p>انقر على "جديد" لإضافة أستاذ.</p></td></tr>';
+    return;
+  }
+  
+  tbody.innerHTML = profs.map(prof => `
+    <tr>
+      <td>${prof.id}</td>
+      <td>${escapeHtml(prof.name)}</td>
+      <td>${escapeHtml(prof.matiere_name || 'N/A')}</td>
+      <td>
+        <div class="action-btns">
+          <button class="btn-action btn-edit" onclick="editProf(${prof.id}, '${escapeHtml(prof.name)}', ${prof.matiere_id || ''})">✏️ تعديل</button>
+          <button class="btn-action btn-delete" onclick="deleteProf(${prof.id})">🗑️ حذف</button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+}
+
 function renderFichesExamTable(fiches) {
   const tbody = document.getElementById('fiches-exam-body');
   if (fiches.length === 0) {
@@ -287,6 +317,25 @@ function getMatiereForm(data = {}) {
     <div class="form-group">
       <label class="form-label">اسم المادة</label>
       <input type="text" id="matiere-name" class="form-input" placeholder="مثال: الرياضيات" value="${escapeHtml(data.name || '')}" required>
+    </div>
+  `;
+}
+
+async function getProfForm(data = {}) {
+  const matieres = await window.electronAPI.getMatieres();
+  
+  return `
+    <div class="form-group">
+      <label class="form-label">اسم الأستاذ</label>
+      <input type="text" id="prof-name" class="form-input" placeholder="مثال: أحمد محمد" value="${escapeHtml(data.name || '')}" required>
+    </div>
+    
+    <div class="form-group">
+      <label class="form-label">المادة</label>
+      <select id="prof-matiere" class="form-select" required>
+        <option value="">اختر مادة</option>
+        ${matieres.map(m => `<option value="${m.id}" ${data.matiere_id === m.id ? 'selected' : ''}>${escapeHtml(m.name)}</option>`).join('')}
+      </select>
     </div>
   `;
 }
@@ -468,6 +517,45 @@ async function handleMatiereSubmit() {
   }
 }
 
+// عمليات إدارة البيانات - الأساتذة
+async function addProf() {
+  const formHtml = await getProfForm();
+  openModal('أستاذ جديد', formHtml, 'add');
+}
+
+async function editProf(id, name, matiere_id) {
+  const formHtml = await getProfForm({ name, matiere_id });
+  openModal('تعديل أستاذ', formHtml, 'edit', id);
+}
+
+async function deleteProf(id) {
+  if (confirm('هل أنت متأكد من حذف هذا الأستاذ؟')) {
+    await window.electronAPI.deleteProf(id);
+    loadDataForTab('profs');
+  }
+}
+
+async function handleProfSubmit() {
+  const name = document.getElementById('prof-name').value.trim();
+  const matiere_id = parseInt(document.getElementById('prof-matiere').value);
+  
+  if (!name) {
+    alert('الرجاء إدخال اسم الأستاذ.');
+    return;
+  }
+  
+  if (!matiere_id) {
+    alert('الرجاء اختيار المادة.');
+    return;
+  }
+  
+  if (currentAction === 'add') {
+    await window.electronAPI.addProf(name, matiere_id);
+  } else {
+    await window.electronAPI.updateProf(currentEditId, name, matiere_id);
+  }
+}
+
 // عمليات إدارة البيانات - بطاقات الامتحان
 async function addFicheExam() {
   const formHtml = await getFicheExamForm();
@@ -533,6 +621,9 @@ document.getElementById('add-btn').addEventListener('click', () => {
       break;
     case 'matieres':
       addMatiere();
+      break;
+    case 'profs':
+      addProf();
       break;
     case 'fiches-exam':
       addFicheExam();

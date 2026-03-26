@@ -25,6 +25,12 @@ contextBridge.exposeInMainWorld('electronAPI', {
   updateMatiere: (id, name) => ipcRenderer.invoke('update-matiere', id, name),
   deleteMatiere: (id) => ipcRenderer.invoke('delete-matiere', id),
   
+  // Profs
+  getProfs: () => ipcRenderer.invoke('get-profs'),
+  addProf: (name, matiere_id) => ipcRenderer.invoke('add-prof', name, matiere_id),
+  updateProf: (id, name, matiere_id) => ipcRenderer.invoke('update-prof', id, name, matiere_id),
+  deleteProf: (id) => ipcRenderer.invoke('delete-prof', id),
+  
   // Fiches Exam
   getFichesExam: () => ipcRenderer.invoke('get-fiches-exam'),
   addFicheExam: (data) => ipcRenderer.invoke('add-fiche-exam', data),

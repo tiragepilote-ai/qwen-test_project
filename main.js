@@ -27,6 +27,13 @@ db.exec(`
     name TEXT NOT NULL
   );
   
+  CREATE TABLE IF NOT EXISTS profs (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    matiere_id INTEGER,
+    FOREIGN KEY (matiere_id) REFERENCES matieres(id)
+  );
+  
   CREATE TABLE IF NOT EXISTS fiches_exam (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     matiere_id INTEGER,
@@ -158,6 +165,38 @@ ipcMain.handle('update-matiere', (event, id, name) => {
 
 ipcMain.handle('delete-matiere', (event, id) => {
   const stmt = db.prepare('DELETE FROM matieres WHERE id = ?');
+  stmt.run(id);
+  return true;
+});
+
+// IPC Handlers for Profs
+ipcMain.handle('get-profs', () => {
+  return db.prepare(`
+    SELECT 
+      p.id,
+      p.name,
+      p.matiere_id,
+      m.name as matiere_name
+    FROM profs p
+    LEFT JOIN matieres m ON p.matiere_id = m.id
+    ORDER BY p.id DESC
+  `).all();
+});
+
+ipcMain.handle('add-prof', (event, name, matiere_id) => {
+  const stmt = db.prepare('INSERT INTO profs (name, matiere_id) VALUES (?, ?)');
+  const result = stmt.run(name, matiere_id);
+  return { id: result.lastInsertRowid, name, matiere_id };
+});
+
+ipcMain.handle('update-prof', (event, id, name, matiere_id) => {
+  const stmt = db.prepare('UPDATE profs SET name = ?, matiere_id = ? WHERE id = ?');
+  stmt.run(name, matiere_id, id);
+  return { id, name, matiere_id };
+});
+
+ipcMain.handle('delete-prof', (event, id) => {
+  const stmt = db.prepare('DELETE FROM profs WHERE id = ?');
   stmt.run(id);
   return true;
 });
