@@ -733,12 +733,22 @@ async function handleFicheExamSubmit() {
     return;
   }
   
+  // Vérifier les conflits de salle et de professeur
+  const conflictCheck = await window.electronAPI.checkSalleConflict(salle_id, day_id, heure_debut, heure_fin, currentEditId);
+  
+  if (conflictCheck.hasConflict) {
+    showToast('error', 'تعارض في القاعة', `القاعة "${conflictCheck.salleName}" مشغولة بالفعل في هذا الوقت من طرف مادة "${conflictCheck.matiereName}".`);
+    return;
+  }
+  
   const data = { matiere_id, classe_id, salle_id, day_id, heure_debut, heure_fin };
   
   if (currentAction === 'add') {
     await window.electronAPI.addFicheExam(data);
+    showToast('success', 'نجاح', 'تم إنشاء بطاقة الامتحان بنجاح.');
   } else {
     await window.electronAPI.updateFicheExam(currentEditId, data);
+    showToast('success', 'نجاح', 'تم تعديل بطاقة الامتحان بنجاح.');
   }
 }
 

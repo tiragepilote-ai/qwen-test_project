@@ -384,3 +384,41 @@ ipcMain.handle('get-seances-for-prof-day', (event, prof_id, day_id) => {
     assigned: assignedIds.has(s.id)
   }));
 });
+
+// IPC Handler for checking salle conflicts during exam creation
+ipcMain.handle('check-salle-conflict', (event, salle_id, day_id, heure_debut, heure_fin, excludeId = null) => {
+  try {
+    const existingExams = db.prepare(`
+      SELECT f.id, f.heure_debut, f.heure_fin, s.name as salle_name, m.name as matiere_name
+      FROM fiches_exam f
+      LEFT JOIN salles s ON f.salle_id = s.id
+      LEFT JOIN matieres m ON f.matiere_id = m.id
+      WHERE f.salle_id = ? AND f.day_id = ?
+      ${excludeId ? 'AND f.id != ?' : ''}
+    `).all(salle_id, day_id, ...(excludeId ? [excludeId] : []));
+
+    const newStart = timeToMinutes(heure_debut);
+    const newEnd = timeToMinutes(heure_fin);
+
+    for (const existing of existingExams) {
+      const existStart = timeToMinutes(existing.heure_debut);
+      const existEnd = timeToMinutes(existing.heure_fin);
+
+      // Overlap check: (StartA < EndB) AND (EndA > StartB)
+      if (newStart < existEnd && newEnd > existStart) {
+        return {
+          hasConflict: true,
+          salleName: existing.salle_name,
+          matiereName: existing.matiere_name,
+          heureDebut: existing.heure_debut,
+          heureFin: existing.heure_fin
+        };
+      }
+    }
+
+    return { hasConflict: false };
+  } catch (error) {
+    console.error('Erreur check-salle-conflict:', error);
+    return { hasConflict: false, error: error.message };
+  }
+});

@@ -41,4 +41,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   getSeancesForProfDay: (prof_id, day_id) => ipcRenderer.invoke('get-seances-for-prof-day', prof_id, day_id),
   assignSeanceToProf: (prof_id, seance_id) => ipcRenderer.invoke('assign-seance-to-prof', prof_id, seance_id),
   unassignSeanceFromProf: (prof_id, seance_id) => ipcRenderer.invoke('unassign-seance-from-prof', prof_id, seance_id),
+  
+  // Conflict checking
+  checkSalleConflict: (salle_id, day_id, heure_debut, heure_fin, excludeId = null) => ipcRenderer.invoke('check-salle-conflict', salle_id, day_id, heure_debut, heure_fin, excludeId),
 });
