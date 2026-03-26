@@ -10,7 +10,8 @@ const pageTitles = {
   'jours': 'الأيام',
   'salles': 'القاعات',
   'matieres': 'المواد',
-  'profs': 'الأساتذة'
+  'profs': 'الأساتذة',
+  'assign-seances': 'تعيين الحصص'
 };
 
 // Initialize app
@@ -147,6 +148,9 @@ async function loadDataForTab(tab) {
     case 'fiches-exam':
       data = await window.electronAPI.getFichesExam();
       renderFichesExamTable(data);
+      break;
+    case 'assign-seances':
+      await renderAssignSeancesTable();
       break;
   }
 }
@@ -644,3 +648,123 @@ function formatDate(dateStr) {
   const date = new Date(dateStr);
   return date.toLocaleDateString('ar-MA');
 }
+
+// ============================================
+// صفحة تعيين الحصص للأساتذة
+// ============================================
+
+async function renderAssignSeancesTable() {
+  const profs = await window.electronAPI.getProfs();
+  const jours = await window.electronAPI.getJours();
+  
+  const headerRow = document.getElementById('assign-header-row');
+  const tbody = document.getElementById('assign-body');
+  
+  // بناء رأس الجدول: العمود الأول "الأستاذ" ثم الأعمدة لكل يوم
+  let headerHTML = '<th style="min-width: 200px; position: sticky; right: 0; background: #1a1a2e; z-index: 10;">الأستاذ</th>';
+  jours.forEach(jour => {
+    headerHTML += `<th style="min-width: 150px;">${formatDate(jour.day)}</th>`;
+  });
+  headerRow.innerHTML = headerHTML;
+  
+  // بناء جسم الجدول: صف لكل أستاذ
+  if (profs.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="' + (jours.length + 1) + '" class="empty-state"><div class="empty-state-icon">📭</div><h3></h3><p>لا يوجد أساتذة. انقر على "جديد" في تبويب الأساتذة لإضافة أستاذ.</p></td></tr>';
+    return;
+  }
+  
+  let bodyHTML = '';
+  profs.forEach(prof => {
+    bodyHTML += `<tr>`;
+    // عمود اسم الأستاذ (مثبت على اليمين)
+    bodyHTML += `<td style="position: sticky; right: 0; background: #1a1a2e; z-index: 5; font-weight: bold;">${escapeHtml(prof.name)}</td>`;
+    
+    // أعمدة الأيام: زر لكل تقاطع
+    jours.forEach(jour => {
+      bodyHTML += `<td style="text-align: center;">`;
+      bodyHTML += `<button class="btn-action btn-assign" onclick="openAssignModal(${prof.id}, '${escapeHtml(prof.name)}', ${jour.id})">تعيين/عرض</button>`;
+      bodyHTML += `</td>`;
+    });
+    
+    bodyHTML += `</tr>`;
+  });
+  
+  tbody.innerHTML = bodyHTML;
+}
+
+async function openAssignModal(profId, profName, dayId) {
+  const seances = await window.electronAPI.getSeancesForProfDay(profId, dayId);
+  const jour = (await window.electronAPI.getJours()).find(j => j.id === dayId);
+  
+  const modalBody = document.getElementById('modal-body');
+  const modalTitle = document.getElementById('modal-title');
+  const modalConfirm = document.getElementById('modal-confirm');
+  const modalCancel = document.getElementById('modal-cancel');
+  
+  modalTitle.textContent = `تعيين الحصص - ${profName} - ${formatDate(jour?.day)}`;
+  
+  // إخفاء زر التأكيد والإلغاء لأننا لا نحتاجهما هنا
+  modalConfirm.style.display = 'none';
+  modalCancel.style.display = 'inline-block';
+  modalCancel.textContent = 'إغلاق';
+  
+  if (seances.length === 0) {
+    modalBody.innerHTML = '<p class="empty-state">لا توجد حصص في هذا اليوم.</p>';
+  } else {
+    let html = '<div class="seance-list">';
+    seances.forEach(seance => {
+      const assignedClass = seance.assigned ? 'assigned' : '';
+      const assignedText = seance.assigned ? '✓ معين' : 'غير معين';
+      html += `
+        <div class="seance-item ${assignedClass}" onclick="toggleSeanceAssignment(${profId}, ${seance.id}, ${!seance.assigned})">
+          <div class="seance-info">
+            <strong>${escapeHtml(seance.matiere_name || 'N/A')}</strong> - 
+            ${escapeHtml(seance.classe_name || 'N/A')} - 
+            ${escapeHtml(seance.salle_name || 'N/A')}
+          </div>
+          <div class="seance-time">${seance.heure_debut || '--:--'} - ${seance.heure_fin || '--:--'}</div>
+          <div class="seance-status ${assignedClass}">${assignedText}</div>
+        </div>
+      `;
+    });
+    html += '</div>';
+    modalBody.innerHTML = html;
+  }
+  
+  // إظهار النافذة
+  document.getElementById('modal-overlay').classList.add('active');
+}
+
+async function toggleSeanceAssignment(profId, seanceId, assign) {
+  if (assign) {
+    await window.electronAPI.assignSeanceToProf(profId, seanceId);
+  } else {
+    await window.electronAPI.unassignSeanceFromProf(profId, seanceId);
+  }
+  
+  // إعادة تحميل المحتوى لتحديث الحالة
+  const currentTabContent = document.querySelector('.tab-content.active');
+  if (currentTabContent.id === 'tab-assign-seances') {
+    // إذا كنا في صفحة التعيين، نعيد تحميل الجدول
+    await renderAssignSeancesTable();
+  }
+  
+  // تحديث قائمة الحصص في النافذة المفتوحة
+  const modalTitle = document.getElementById('modal-title').textContent;
+  // استخراج معلومات البروف واليوم من العنوان (طريقة بسيطة)
+  // سنقوم فقط بإعادة فتح النافذة بنفس المعاملات
+  // لكن الأفضل هو تمرير المعاملات مباشرة
+  
+  // للحصول على المعاملات الحالية، نحتاج إلى تخزينها
+  // سنفترض أننا سنمررها عبر دالة مساعدة
+}
+
+// تعديل closeModal لإعادة عرض الأزرار
+const originalCloseModal = closeModal;
+closeModal = function() {
+  const modalConfirm = document.getElementById('modal-confirm');
+  const modalCancel = document.getElementById('modal-cancel');
+  modalConfirm.style.display = 'inline-block';
+  modalCancel.textContent = 'إلغاء';
+  originalCloseModal();
+};

@@ -34,6 +34,14 @@ db.exec(`
     FOREIGN KEY (matiere_id) REFERENCES matieres(id)
   );
   
+  CREATE TABLE IF NOT EXISTS prof_seance (
+    prof_id INTEGER NOT NULL,
+    seance_id INTEGER NOT NULL,
+    PRIMARY KEY (prof_id, seance_id),
+    FOREIGN KEY(prof_id) REFERENCES profs(id) ON DELETE CASCADE,
+    FOREIGN KEY(seance_id) REFERENCES fiches_exam(id) ON DELETE CASCADE
+  );
+  
   CREATE TABLE IF NOT EXISTS fiches_exam (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     matiere_id INTEGER,
@@ -248,4 +256,49 @@ ipcMain.handle('delete-fiche-exam', (event, id) => {
   const stmt = db.prepare('DELETE FROM fiches_exam WHERE id = ?');
   stmt.run(id);
   return true;
+});
+
+// IPC Handlers for Prof-Seance Assignment
+ipcMain.handle('get-prof-seances', () => {
+  return db.prepare(`
+    SELECT ps.prof_id, ps.seance_id
+    FROM prof_seance ps
+  `).all();
+});
+
+ipcMain.handle('assign-seance-to-prof', (event, prof_id, seance_id) => {
+  const stmt = db.prepare('INSERT OR IGNORE INTO prof_seance (prof_id, seance_id) VALUES (?, ?)');
+  stmt.run(prof_id, seance_id);
+  return true;
+});
+
+ipcMain.handle('unassign-seance-from-prof', (event, prof_id, seance_id) => {
+  const stmt = db.prepare('DELETE FROM prof_seance WHERE prof_id = ? AND seance_id = ?');
+  stmt.run(prof_id, seance_id);
+  return true;
+});
+
+ipcMain.handle('get-seances-for-prof-day', (event, prof_id, day_id) => {
+  // Get all seances for a specific day
+  const seances = db.prepare(`
+    SELECT f.id, f.matiere_id, m.name as matiere_name, f.classe_id, c.name as classe_name, 
+           f.salle_id, s.name as salle_name, f.heure_debut, f.heure_fin
+    FROM fiches_exam f
+    LEFT JOIN matieres m ON f.matiere_id = m.id
+    LEFT JOIN classes c ON f.classe_id = c.id
+    LEFT JOIN salles s ON f.salle_id = s.id
+    WHERE f.day_id = ?
+  `).all(day_id);
+
+  // Get assigned seances for this prof
+  const assigned = db.prepare(`
+    SELECT seance_id FROM prof_seance WHERE prof_id = ?
+  `).all(prof_id);
+
+  const assignedIds = new Set(assigned.map(a => a.seance_id));
+
+  return seances.map(s => ({
+    ...s,
+    assigned: assignedIds.has(s.id)
+  }));
 });

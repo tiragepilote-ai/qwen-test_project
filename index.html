@@ -42,6 +42,10 @@
           <span class="nav-icon">👨‍🏫</span>
           الأساتذة
         </button>
+        <button class="nav-btn" data-tab="assign-seances">
+          <span class="nav-icon">✅</span>
+          تعيين الحصص
+        </button>
       </nav>
       
       <div class="sidebar-footer">
@@ -158,6 +162,20 @@
                 </tr>
               </thead>
               <tbody id="profs-body"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Assign Seances Table -->
+        <div class="tab-content" id="tab-assign-seances">
+          <div class="table-container" style="overflow-x: auto;">
+            <table class="data-table assign-table" id="assign-table">
+              <thead>
+                <tr id="assign-header-row">
+                  <th style="min-width: 200px; position: sticky; right: 0; background: #1a1a2e; z-index: 10;">الأستاذ</th>
+                </tr>
+              </thead>
+              <tbody id="assign-body"></tbody>
             </table>
           </div>
         </div>

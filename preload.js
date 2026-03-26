@@ -36,4 +36,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
   addFicheExam: (data) => ipcRenderer.invoke('add-fiche-exam', data),
   updateFicheExam: (id, data) => ipcRenderer.invoke('update-fiche-exam', id, data),
   deleteFicheExam: (id) => ipcRenderer.invoke('delete-fiche-exam', id),
+  
+  // Prof-Seance Assignment
+  getSeancesForProfDay: (prof_id, day_id) => ipcRenderer.invoke('get-seances-for-prof-day', prof_id, day_id),
+  assignSeanceToProf: (prof_id, seance_id) => ipcRenderer.invoke('assign-seance-to-prof', prof_id, seance_id),
+  unassignSeanceFromProf: (prof_id, seance_id) => ipcRenderer.invoke('unassign-seance-from-prof', prof_id, seance_id),
 });
