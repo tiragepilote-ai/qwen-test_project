@@ -1,32 +1,25 @@
 ```
-node_modules/
-package-lock.json
-*.log
-*.tmp
-*.swp
-*.swo
-*.out
-dist/
-build/
-target/
-coverage/
-htmlcov/
-.cov
+# Compressed files
+*.tar.gz
+
+# Environment
 .env
 .env.local
-.env.*
-.DS_Store
-Thumbs.db
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
-*.class
-.vagrant/
+*.env.*
+
+# Logs and temp files
+*.log
+*.tmp
+
+# Editors
 .vscode/
 .idea/
+
+# Dependencies
+node_modules/
+.venv/
+venv/
+__pycache__/
 .mypy_cache/
 .pytest_cache/
-.gradle/
-.nyc_output/
 ```
