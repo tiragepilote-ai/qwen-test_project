@@ -27,6 +27,21 @@ db.exec(`
     name TEXT NOT NULL
   );
   
+  CREATE TABLE IF NOT EXISTS profs (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    matiere_id INTEGER,
+    FOREIGN KEY (matiere_id) REFERENCES matieres(id)
+  );
+  
+  CREATE TABLE IF NOT EXISTS prof_seance (
+    prof_id INTEGER NOT NULL,
+    seance_id INTEGER NOT NULL,
+    PRIMARY KEY (prof_id, seance_id),
+    FOREIGN KEY(prof_id) REFERENCES profs(id) ON DELETE CASCADE,
+    FOREIGN KEY(seance_id) REFERENCES fiches_exam(id) ON DELETE CASCADE
+  );
+  
   CREATE TABLE IF NOT EXISTS fiches_exam (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     matiere_id INTEGER,
@@ -162,6 +177,38 @@ ipcMain.handle('delete-matiere', (event, id) => {
   return true;
 });
 
+// IPC Handlers for Profs
+ipcMain.handle('get-profs', () => {
+  return db.prepare(`
+    SELECT 
+      p.id,
+      p.name,
+      p.matiere_id,
+      m.name as matiere_name
+    FROM profs p
+    LEFT JOIN matieres m ON p.matiere_id = m.id
+    ORDER BY p.id DESC
+  `).all();
+});
+
+ipcMain.handle('add-prof', (event, name, matiere_id) => {
+  const stmt = db.prepare('INSERT INTO profs (name, matiere_id) VALUES (?, ?)');
+  const result = stmt.run(name, matiere_id);
+  return { id: result.lastInsertRowid, name, matiere_id };
+});
+
+ipcMain.handle('update-prof', (event, id, name, matiere_id) => {
+  const stmt = db.prepare('UPDATE profs SET name = ?, matiere_id = ? WHERE id = ?');
+  stmt.run(name, matiere_id, id);
+  return { id, name, matiere_id };
+});
+
+ipcMain.handle('delete-prof', (event, id) => {
+  const stmt = db.prepare('DELETE FROM profs WHERE id = ?');
+  stmt.run(id);
+  return true;
+});
+
 // IPC Handlers for Fiches Exam
 ipcMain.handle('get-fiches-exam', () => {
   return db.prepare(`
@@ -209,4 +256,169 @@ ipcMain.handle('delete-fiche-exam', (event, id) => {
   const stmt = db.prepare('DELETE FROM fiches_exam WHERE id = ?');
   stmt.run(id);
   return true;
+});
+
+// IPC Handlers for Prof-Seance Assignment
+ipcMain.handle('get-prof-seances', () => {
+  return db.prepare(`
+    SELECT ps.prof_id, ps.seance_id
+    FROM prof_seance ps
+  `).all();
+});
+
+// Helper function to convert time string "HH:MM" to minutes
+const timeToMinutes = (timeStr) => {
+  const [h, m] = timeStr.split(':').map(Number);
+  return h * 60 + m;
+};
+
+// Check for professor conflicts
+const checkProfConflict = (profId, dayId, startTime, endTime) => {
+  const existingAssignments = db.prepare(`
+    SELECT f.heure_debut, f.heure_fin
+    FROM prof_seance ps
+    JOIN fiches_exam f ON ps.seance_id = f.id
+    WHERE ps.prof_id = ? AND f.day_id = ?
+  `).all(profId, dayId);
+
+  const newStart = timeToMinutes(startTime);
+  const newEnd = timeToMinutes(endTime);
+
+  for (const existing of existingAssignments) {
+    const existStart = timeToMinutes(existing.heure_debut);
+    const existEnd = timeToMinutes(existing.heure_fin);
+
+    // Overlap check: (StartA < EndB) AND (EndA > StartB)
+    if (newStart < existEnd && newEnd > existStart) {
+      return false; // Conflict found
+    }
+  }
+  return true; // No conflict
+};
+
+// Check for room (salle) conflicts
+const checkSalleConflict = (salleId, dayId, startTime, endTime) => {
+  const existingExams = db.prepare(`
+    SELECT heure_debut, heure_fin
+    FROM fiches_exam
+    WHERE salle_id = ? AND day_id = ?
+  `).all(salleId, dayId);
+
+  const newStart = timeToMinutes(startTime);
+  const newEnd = timeToMinutes(endTime);
+
+  for (const existing of existingExams) {
+    const existStart = timeToMinutes(existing.heure_debut);
+    const existEnd = timeToMinutes(existing.heure_fin);
+
+    // Overlap check
+    if (newStart < existEnd && newEnd > existStart) {
+      return false; // Conflict found
+    }
+  }
+  return true; // No conflict
+};
+
+ipcMain.handle('assign-seance-to-prof', (event, prof_id, seance_id) => {
+  try {
+    // 1. Get seance details
+    const seance = db.prepare('SELECT * FROM fiches_exam WHERE id = ?').get(seance_id);
+    if (!seance) {
+      return { success: false, error: 'Séance introuvable' };
+    }
+
+    // 2. Check professor conflict
+    if (!checkProfConflict(prof_id, seance.day_id, seance.heure_debut, seance.heure_fin)) {
+      return { 
+        success: false, 
+        error: 'تعارض في الجدول الزمني: الأستاذ مشغول في هذا الوقت بالفعل.' 
+      };
+    }
+
+    // 3. Check room conflict (optional: only if you want to prevent room double-booking via this action)
+    // Note: Usually room conflicts are checked when creating the exam card, but we can double-check here
+    if (!checkSalleConflict(seance.salle_id, seance.day_id, seance.heure_debut, seance.heure_fin)) {
+       return { 
+        success: false, 
+        error: 'تعارض في القاعة: هناك امتحان آخر مبرمج في نفس القاعة و نفس الوقت.' 
+      };
+    }
+
+    // 4. If no conflicts, assign
+    const stmt = db.prepare('INSERT OR IGNORE INTO prof_seance (prof_id, seance_id) VALUES (?, ?)');
+    stmt.run(prof_id, seance_id);
+    return { success: true };
+  } catch (error) {
+    console.error('Erreur assignation:', error);
+    return { success: false, error: error.message };
+  }
+});
+
+ipcMain.handle('unassign-seance-from-prof', (event, prof_id, seance_id) => {
+  const stmt = db.prepare('DELETE FROM prof_seance WHERE prof_id = ? AND seance_id = ?');
+  stmt.run(prof_id, seance_id);
+  return true;
+});
+
+ipcMain.handle('get-seances-for-prof-day', (event, prof_id, day_id) => {
+  // Get all seances for a specific day
+  const seances = db.prepare(`
+    SELECT f.id, f.matiere_id, m.name as matiere_name, f.classe_id, c.name as classe_name, 
+           f.salle_id, s.name as salle_name, f.heure_debut, f.heure_fin
+    FROM fiches_exam f
+    LEFT JOIN matieres m ON f.matiere_id = m.id
+    LEFT JOIN classes c ON f.classe_id = c.id
+    LEFT JOIN salles s ON f.salle_id = s.id
+    WHERE f.day_id = ?
+  `).all(day_id);
+
+  // Get assigned seances for this prof
+  const assigned = db.prepare(`
+    SELECT seance_id FROM prof_seance WHERE prof_id = ?
+  `).all(prof_id);
+
+  const assignedIds = new Set(assigned.map(a => a.seance_id));
+
+  return seances.map(s => ({
+    ...s,
+    assigned: assignedIds.has(s.id)
+  }));
+});
+
+// IPC Handler for checking salle conflicts during exam creation
+ipcMain.handle('check-salle-conflict', (event, salle_id, day_id, heure_debut, heure_fin, excludeId = null) => {
+  try {
+    const existingExams = db.prepare(`
+      SELECT f.id, f.heure_debut, f.heure_fin, s.name as salle_name, m.name as matiere_name
+      FROM fiches_exam f
+      LEFT JOIN salles s ON f.salle_id = s.id
+      LEFT JOIN matieres m ON f.matiere_id = m.id
+      WHERE f.salle_id = ? AND f.day_id = ?
+      ${excludeId ? 'AND f.id != ?' : ''}
+    `).all(salle_id, day_id, ...(excludeId ? [excludeId] : []));
+
+    const newStart = timeToMinutes(heure_debut);
+    const newEnd = timeToMinutes(heure_fin);
+
+    for (const existing of existingExams) {
+      const existStart = timeToMinutes(existing.heure_debut);
+      const existEnd = timeToMinutes(existing.heure_fin);
+
+      // Overlap check: (StartA < EndB) AND (EndA > StartB)
+      if (newStart < existEnd && newEnd > existStart) {
+        return {
+          hasConflict: true,
+          salleName: existing.salle_name,
+          matiereName: existing.matiere_name,
+          heureDebut: existing.heure_debut,
+          heureFin: existing.heure_fin
+        };
+      }
+    }
+
+    return { hasConflict: false };
+  } catch (error) {
+    console.error('Erreur check-salle-conflict:', error);
+    return { hasConflict: false, error: error.message };
+  }
 });

@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'">
-  <title>Gestion des Examens - Application Premium</title>
+  <title>إدارة الامتحانات - التطبيق المتميز</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -13,46 +13,57 @@
     <aside class="sidebar">
       <div class="logo-section">
         <div class="logo-icon">📚</div>
-        <h1>ExamManager</h1>
-        <p class="subtitle">Premium Edition</p>
+        <h1>مدير الامتحانات</h1>
+        <p class="subtitle">الطبعة المتميزة</p>
       </div>
       
       <nav class="nav-menu">
         <button class="nav-btn active" data-tab="fiches-exam">
           <span class="nav-icon">📋</span>
-          Fiches d'Examen
+          بطاقات الامتحان
         </button>
         <button class="nav-btn" data-tab="classes">
           <span class="nav-icon">👥</span>
-          Classes
+          الفصول
         </button>
         <button class="nav-btn" data-tab="jours">
           <span class="nav-icon">📅</span>
-          Jours
+          الأيام
         </button>
         <button class="nav-btn" data-tab="salles">
           <span class="nav-icon">🏛️</span>
-          Salles
+          القاعات
         </button>
         <button class="nav-btn" data-tab="matieres">
           <span class="nav-icon">📖</span>
-          Matières
+          المواد
+        </button>
+        <button class="nav-btn" data-tab="profs">
+          <span class="nav-icon">👨‍🏫</span>
+          الأساتذة
+        </button>
+        <button class="nav-btn" data-tab="assign-seances">
+          <span class="nav-icon">✅</span>
+          تعيين الحصص
         </button>
       </nav>
       
       <div class="sidebar-footer">
-        <p>© 2024 ExamManager</p>
+        <p>© 2024 مدير الامتحانات</p>
       </div>
     </aside>
 
     <!-- Main Content -->
     <main class="main-content">
       <header class="content-header">
-        <h2 id="page-title">Fiches d'Examen</h2>
-        <button class="btn-primary" id="add-btn">
-          <span class="btn-icon">+</span>
-          Nouveau
-        </button>
+        <h2 id="page-title">بطاقات الامتحان</h2>
+        <div style="display: flex; gap: 10px; align-items: center;">
+          <button class="btn-secondary" id="theme-toggle" style="padding: 10px 16px; font-size: 18px;">🌙</button>
+          <button class="btn-primary" id="add-btn">
+            <span class="btn-icon">+</span>
+            جديد
+          </button>
+        </div>
       </header>
 
       <div class="content-body">
@@ -62,14 +73,14 @@
             <table class="data-table">
               <thead>
                 <tr>
-                  <th>ID</th>
-                  <th>Matière</th>
-                  <th>Classe</th>
-                  <th>Salle</th>
-                  <th>Jour</th>
-                  <th>Heure Début</th>
-                  <th>Heure Fin</th>
-                  <th>Actions</th>
+                  <th>المعرف</th>
+                  <th>المادة</th>
+                  <th>الفصل</th>
+                  <th>القاعة</th>
+                  <th>اليوم</th>
+                  <th>وقت البدء</th>
+                  <th>وقت الانتهاء</th>
+                  <th>الإجراءات</th>
                 </tr>
               </thead>
               <tbody id="fiches-exam-body"></tbody>
@@ -83,9 +94,9 @@
             <table class="data-table">
               <thead>
                 <tr>
-                  <th>ID</th>
-                  <th>Nom de la Classe</th>
-                  <th>Actions</th>
+                  <th>المعرف</th>
+                  <th>اسم الفصل</th>
+                  <th>الإجراءات</th>
                 </tr>
               </thead>
               <tbody id="classes-body"></tbody>
@@ -99,9 +110,9 @@
             <table class="data-table">
               <thead>
                 <tr>
-                  <th>ID</th>
-                  <th>Date</th>
-                  <th>Actions</th>
+                  <th>المعرف</th>
+                  <th>التاريخ</th>
+                  <th>الإجراءات</th>
                 </tr>
               </thead>
               <tbody id="jours-body"></tbody>
@@ -115,9 +126,9 @@
             <table class="data-table">
               <thead>
                 <tr>
-                  <th>ID</th>
-                  <th>Nom de la Salle</th>
-                  <th>Actions</th>
+                  <th>المعرف</th>
+                  <th>اسم القاعة</th>
+                  <th>الإجراءات</th>
                 </tr>
               </thead>
               <tbody id="salles-body"></tbody>
@@ -131,12 +142,43 @@
             <table class="data-table">
               <thead>
                 <tr>
-                  <th>ID</th>
-                  <th>Nom de la Matière</th>
-                  <th>Actions</th>
+                  <th>المعرف</th>
+                  <th>اسم المادة</th>
+                  <th>الإجراءات</th>
                 </tr>
               </thead>
               <tbody id="matieres-body"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Profs Table -->
+        <div class="tab-content" id="tab-profs">
+          <div class="table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>المعرف</th>
+                  <th>اسم الأستاذ</th>
+                  <th>المادة</th>
+                  <th>الإجراءات</th>
+                </tr>
+              </thead>
+              <tbody id="profs-body"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Assign Seances Table -->
+        <div class="tab-content" id="tab-assign-seances">
+          <div class="table-container" style="overflow-x: auto;">
+            <table class="data-table assign-table" id="assign-table">
+              <thead>
+                <tr id="assign-header-row">
+                  <th style="min-width: 200px; position: sticky; right: 0; background: #1a1a2e; z-index: 10;">الأستاذ</th>
+                </tr>
+              </thead>
+              <tbody id="assign-body"></tbody>
             </table>
           </div>
         </div>
@@ -148,18 +190,47 @@
   <div class="modal-overlay" id="modal-overlay">
     <div class="modal">
       <div class="modal-header">
-        <h3 id="modal-title">Titre du Modal</h3>
+        <h3 id="modal-title">عنوان النافذة</h3>
         <button class="modal-close" id="modal-close">×</button>
       </div>
       <div class="modal-body" id="modal-body">
         <!-- Dynamic form content will be injected here -->
       </div>
       <div class="modal-footer">
-        <button class="btn-secondary" id="modal-cancel">Annuler</button>
-        <button class="btn-primary" id="modal-confirm">Valider</button>
+        <button class="btn-secondary" id="modal-cancel">إلغاء</button>
+        <button class="btn-primary" id="modal-confirm">تأكيد</button>
       </div>
     </div>
   </div>
+
+  <!-- Toast Container -->
+  <div id="toast-container"></div>
+
+  <!-- Status Bar -->
+  <footer class="status-bar">
+    <div class="status-bar-left">
+      <div class="status-item">
+        <span class="status-icon">✓</span>
+        <span id="status-ready">جاهز</span>
+      </div>
+      <div class="status-divider"></div>
+      <div class="status-item">
+        <span class="status-icon">📊</span>
+        <span id="status-count">0 عناصر</span>
+      </div>
+    </div>
+    <div class="status-bar-right">
+      <div class="status-item">
+        <span class="status-icon">👤</span>
+        <span id="status-user">مدير النظام</span>
+      </div>
+      <div class="status-divider"></div>
+      <div class="status-item">
+        <span class="status-icon">🕐</span>
+        <span id="status-time">--:--</span>
+      </div>
+    </div>
+  </footer>
 
   <script src="renderer.js"></script>
 </body>

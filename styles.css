@@ -40,6 +40,34 @@
   --transition-slow: 0.5s ease;
 }
 
+[data-theme="light"] {
+  --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  --accent-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  
+  --bg-primary: #f4f6f9;
+  --bg-secondary: #ffffff;
+  --bg-tertiary: #ecf0f1;
+  --bg-card: #ffffff;
+  
+  --text-primary: #2c3e50;
+  --text-secondary: #5d6d7e;
+  --text-muted: #95a5a6;
+  
+  --border-color: rgba(0, 0, 0, 0.1);
+  --border-light: rgba(0, 0, 0, 0.05);
+  
+  --success: #27ae60;
+  --warning: #f39c12;
+  --danger: #e74c3c;
+  --info: #3498db;
+  
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.08);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.15);
+  --shadow-glow: 0 0 20px rgba(102, 126, 234, 0.2);
+}
+
 * {
   margin: 0;
   padding: 0;
@@ -622,4 +650,380 @@ body {
   .form-row {
     grid-template-columns: 1fr;
   }
+}
+
+/* ========================================
+   Styles pour la page d'assignation des séances
+   ======================================== */
+
+.btn-assign {
+  background: var(--accent-gradient);
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-weight: 600;
+  transition: all var(--transition-fast);
+  font-size: 0.85rem;
+}
+
+.btn-assign:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(79, 172, 254, 0.4);
+}
+
+.btn-assign.has-assignments {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+}
+
+.seance-list {
+  max-height: 400px;
+  overflow-y: auto;
+  padding: 10px;
+}
+
+.seance-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  margin-bottom: 8px;
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  border: 2px solid transparent;
+}
+
+.seance-item:hover {
+  transform: translateX(-4px);
+  background: var(--bg-card);
+}
+
+.seance-item.assigned {
+  border-color: var(--success);
+  background: rgba(0, 210, 106, 0.1);
+  transform: translateX(-4px);
+}
+
+.seance-info {
+  flex: 1;
+  color: var(--text-primary);
+  font-size: 0.9rem;
+}
+
+.seance-info strong {
+  color: var(--info);
+}
+
+.seance-time {
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  margin: 0 15px;
+  white-space: nowrap;
+}
+
+.seance-status {
+  padding: 4px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 0.8rem;
+  font-weight: 600;
+  background: var(--bg-secondary);
+  color: var(--text-muted);
+  transition: all var(--transition-fast);
+}
+
+.seance-status.assigned {
+  background: var(--success);
+  color: white;
+}
+
+.assign-table th {
+  padding: 16px 12px;
+  text-align: center;
+  font-weight: 600;
+  color: var(--text-primary);
+  border-bottom: 2px solid var(--border-color);
+}
+
+.assign-table td {
+  padding: 12px;
+  text-align: center;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.assign-table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+/* ========================================
+   Status Bar - Professional Look
+   ======================================== */
+.status-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 28px;
+  background: var(--bg-secondary);
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  z-index: 1000;
+  backdrop-filter: blur(10px);
+}
+
+.status-bar-left,
+.status-bar-right {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.status-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: color var(--transition-fast);
+}
+
+.status-item:hover {
+  color: var(--text-primary);
+}
+
+.status-icon {
+  font-size: 14px;
+}
+
+.status-divider {
+  width: 1px;
+  height: 16px;
+  background: var(--border-color);
+}
+
+/* ========================================
+   Status Bar - Professional Look
+   ======================================== */
+.status-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 28px;
+  background: var(--bg-secondary);
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  z-index: 1000;
+  backdrop-filter: blur(10px);
+}
+
+.status-bar-left,
+.status-bar-right {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.status-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: color var(--transition-fast);
+}
+
+.status-item:hover {
+  color: var(--text-primary);
+}
+
+.status-icon {
+  font-size: 14px;
+}
+
+.status-divider {
+  width: 1px;
+  height: 16px;
+  background: var(--border-color);
+}
+
+/* Styles pour les boutons de toggle dans la modale d'assignation */
+.btn-toggle-seance {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: all 0.2s ease;
+  background-color: #e0e0e0;
+  color: #333;
+}
+
+.btn-toggle-seance.assigned {
+  background-color: #4caf50;
+  color: white;
+}
+
+.btn-toggle-seance:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.seance-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  border-bottom: 1px solid #eee;
+  gap: 10px;
+}
+
+.seance-info {
+  flex: 1;
+  min-width: 200px;
+}
+
+.seance-time {
+  font-size: 0.85rem;
+  color: #666;
+  white-space: nowrap;
+}
+
+[data-theme="dark"] .btn-toggle-seance {
+  background-color: #555;
+  color: #fff;
+}
+
+[data-theme="dark"] .btn-toggle-seance.assigned {
+  background-color: #4caf50;
+  color: white;
+}
+
+[data-theme="dark"] .seance-item {
+  border-bottom-color: #444;
+}
+
+[data-theme="dark"] .seance-time {
+  color: #aaa;
+}
+
+/* ========================================
+   Toast Notifications Styles
+   ======================================== */
+#toast-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 10000;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  pointer-events: none;
+}
+
+.toast {
+  min-width: 300px;
+  max-width: 450px;
+  padding: 16px 20px;
+  border-radius: var(--radius-md);
+  background: var(--bg-card);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-lg);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  animation: slideInRight 0.3s ease forwards;
+  pointer-events: auto;
+  border-left: 4px solid;
+  backdrop-filter: blur(10px);
+}
+
+.toast.success {
+  border-left-color: var(--success);
+  background: linear-gradient(135deg, rgba(0, 210, 106, 0.1), rgba(0, 0, 0, 0.2));
+}
+
+.toast.error {
+  border-left-color: var(--danger);
+  background: linear-gradient(135deg, rgba(255, 71, 87, 0.1), rgba(0, 0, 0, 0.2));
+}
+
+.toast.warning {
+  border-left-color: var(--warning);
+  background: linear-gradient(135deg, rgba(255, 193, 7, 0.1), rgba(0, 0, 0, 0.2));
+}
+
+.toast.info {
+  border-left-color: var(--info);
+  background: linear-gradient(135deg, rgba(83, 82, 237, 0.1), rgba(0, 0, 0, 0.2));
+}
+
+.toast-icon {
+  font-size: 1.4rem;
+  flex-shrink: 0;
+}
+
+.toast-content {
+  flex: 1;
+}
+
+.toast-title {
+  font-weight: 600;
+  font-size: 0.95rem;
+  margin-bottom: 4px;
+}
+
+.toast-message {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.toast-close {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 1.2rem;
+  padding: 4px;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.toast-close:hover {
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideOutRight {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+.toast.hiding {
+  animation: slideOutRight 0.3s ease forwards;
 }

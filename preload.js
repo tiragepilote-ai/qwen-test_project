@@ -25,9 +25,23 @@ contextBridge.exposeInMainWorld('electronAPI', {
   updateMatiere: (id, name) => ipcRenderer.invoke('update-matiere', id, name),
   deleteMatiere: (id) => ipcRenderer.invoke('delete-matiere', id),
   
+  // Profs
+  getProfs: () => ipcRenderer.invoke('get-profs'),
+  addProf: (name, matiere_id) => ipcRenderer.invoke('add-prof', name, matiere_id),
+  updateProf: (id, name, matiere_id) => ipcRenderer.invoke('update-prof', id, name, matiere_id),
+  deleteProf: (id) => ipcRenderer.invoke('delete-prof', id),
+  
   // Fiches Exam
   getFichesExam: () => ipcRenderer.invoke('get-fiches-exam'),
   addFicheExam: (data) => ipcRenderer.invoke('add-fiche-exam', data),
   updateFicheExam: (id, data) => ipcRenderer.invoke('update-fiche-exam', id, data),
   deleteFicheExam: (id) => ipcRenderer.invoke('delete-fiche-exam', id),
+  
+  // Prof-Seance Assignment
+  getSeancesForProfDay: (prof_id, day_id) => ipcRenderer.invoke('get-seances-for-prof-day', prof_id, day_id),
+  assignSeanceToProf: (prof_id, seance_id) => ipcRenderer.invoke('assign-seance-to-prof', prof_id, seance_id),
+  unassignSeanceFromProf: (prof_id, seance_id) => ipcRenderer.invoke('unassign-seance-from-prof', prof_id, seance_id),
+  
+  // Conflict checking
+  checkSalleConflict: (salle_id, day_id, heure_debut, heure_fin, excludeId = null) => ipcRenderer.invoke('check-salle-conflict', salle_id, day_id, heure_debut, heure_fin, excludeId),
 });
