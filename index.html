@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'">
+  <title>Gestion des Examens - Application Premium</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+      <div class="logo-section">
+        <div class="logo-icon">📚</div>
+        <h1>ExamManager</h1>
+        <p class="subtitle">Premium Edition</p>
+      </div>
+      
+      <nav class="nav-menu">
+        <button class="nav-btn active" data-tab="fiches-exam">
+          <span class="nav-icon">📋</span>
+          Fiches d'Examen
+        </button>
+        <button class="nav-btn" data-tab="classes">
+          <span class="nav-icon">👥</span>
+          Classes
+        </button>
+        <button class="nav-btn" data-tab="jours">
+          <span class="nav-icon">📅</span>
+          Jours
+        </button>
+        <button class="nav-btn" data-tab="salles">
+          <span class="nav-icon">🏛️</span>
+          Salles
+        </button>
+        <button class="nav-btn" data-tab="matieres">
+          <span class="nav-icon">📖</span>
+          Matières
+        </button>
+      </nav>
+      
+      <div class="sidebar-footer">
+        <p>© 2024 ExamManager</p>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <header class="content-header">
+        <h2 id="page-title">Fiches d'Examen</h2>
+        <button class="btn-primary" id="add-btn">
+          <span class="btn-icon">+</span>
+          Nouveau
+        </button>
+      </header>
+
+      <div class="content-body">
+        <!-- Fiches Exam Table -->
+        <div class="tab-content active" id="tab-fiches-exam">
+          <div class="table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Matière</th>
+                  <th>Classe</th>
+                  <th>Salle</th>
+                  <th>Jour</th>
+                  <th>Heure Début</th>
+                  <th>Heure Fin</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="fiches-exam-body"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Classes Table -->
+        <div class="tab-content" id="tab-classes">
+          <div class="table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Nom de la Classe</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="classes-body"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Jours Table -->
+        <div class="tab-content" id="tab-jours">
+          <div class="table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Date</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="jours-body"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Salles Table -->
+        <div class="tab-content" id="tab-salles">
+          <div class="table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Nom de la Salle</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="salles-body"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Matieres Table -->
+        <div class="tab-content" id="tab-matieres">
+          <div class="table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Nom de la Matière</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="matieres-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Modal Component -->
+  <div class="modal-overlay" id="modal-overlay">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 id="modal-title">Titre du Modal</h3>
+        <button class="modal-close" id="modal-close">×</button>
+      </div>
+      <div class="modal-body" id="modal-body">
+        <!-- Dynamic form content will be injected here -->
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" id="modal-cancel">Annuler</button>
+        <button class="btn-primary" id="modal-confirm">Valider</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="renderer.js"></script>
+</body>
+</html>
