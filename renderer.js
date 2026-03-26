@@ -836,16 +836,16 @@ async function openAssignModal(profId, profName, dayId) {
     let html = '<div class="seance-list">';
     seances.forEach(seance => {
       const assignedClass = seance.assigned ? 'assigned' : '';
-      const assignedText = seance.assigned ? '✓ معين' : 'غير معين';
+      const actionLabel = seance.assigned ? 'إلغاء التعيين' : 'تعيين';
       html += `
-        <div class="seance-item ${assignedClass}" onclick="toggleSeanceAssignment(${profId}, ${seance.id}, ${!seance.assigned})">
+        <div class="seance-item ${assignedClass}" id="seance-item-${seance.id}">
           <div class="seance-info">
             <strong>${escapeHtml(seance.matiere_name || 'N/A')}</strong> - 
             ${escapeHtml(seance.classe_name || 'N/A')} - 
             ${escapeHtml(seance.salle_name || 'N/A')}
           </div>
           <div class="seance-time">${seance.heure_debut || '--:--'} - ${seance.heure_fin || '--:--'}</div>
-          <div class="seance-status ${assignedClass}">${assignedText}</div>
+          <button class="btn-toggle-seance ${assignedClass}" id="btn-toggle-${seance.id}" onclick="toggleSeanceAssignment(${profId}, ${seance.id})">${actionLabel}</button>
         </div>
       `;
     });
@@ -857,24 +857,23 @@ async function openAssignModal(profId, profName, dayId) {
   document.getElementById('modal-overlay').classList.add('active');
 }
 
-async function toggleSeanceAssignment(profId, seanceId, assign) {
+async function toggleSeanceAssignment(profId, seanceId) {
   const button = event.currentTarget;
+  const isAssigned = button.classList.contains('assigned');
   
-  if (assign) {
+  if (!isAssigned) {
+    // Assigner
     await window.electronAPI.assignSeanceToProf(profId, seanceId);
-    // Mise à jour immédiate de l'UI
     button.classList.add('assigned');
-    button.querySelector('.seance-status').textContent = '✓ معين';
-    button.querySelector('.seance-status').classList.add('assigned');
+    button.textContent = 'إلغاء التعيين';
   } else {
+    // Désassigner
     await window.electronAPI.unassignSeanceFromProf(profId, seanceId);
-    // Mise à jour immédiate de l'UI
     button.classList.remove('assigned');
-    button.querySelector('.seance-status').textContent = 'غير معين';
-    button.querySelector('.seance-status').classList.remove('assigned');
+    button.textContent = 'تعيين';
   }
   
-  // Mettre à jour le bouton dans le tableau principal aussi
+  // Mettre à jour le bouton dans le tableau principal
   updateAssignButtonCountInTable(profId);
 }
 
